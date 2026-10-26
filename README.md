@@ -16,7 +16,7 @@
 6. Which high-level parts of your system depend on abstractions rather than concrete implementations?
    In the MenuItem class, I made the class abstract because the classes that extend it, like Pizza and Drink, calculate the price differently. Pizza has extra attributes compared to Drink, so I made the getPrice() function abstract and override it in each child class.
 
-For example, in the Order class, it depends on interfaces like PaymentMethod, Promotion, and DeliveryTrack, so for any new feature, I can make a new class and implement the interface instead of changing the implementation of the Order class.
+   For example, in the Order class, it depends on interfaces like PaymentMethod, Promotion, and DeliveryTrack, so for any new feature, I can make a new class and implement the interface instead of changing the      implementation of the Order class.
 
 7. Where did you choose composition instead of inheritance, and why?
    I used composition between Order and OrderItem because an Order contains a list of OrderItem objects. I used composition instead of inheritance because an OrderItem is not a type of Order it is a part of an Order.
@@ -31,7 +31,7 @@ For example, in the Order class, it depends on interfaces like PaymentMethod, Pr
 10. If Pizza El Sultan requested five additional payment methods or notification channels tomorrow,
     approximately how much existing code would need modification?
 
- Small changes We only need to add new classes for the new payment or notification methods, and write code in the Main file to use them, without touching the existing classes
+    Small changes We only need to add new classes for the new payment or notification methods, and write code in the Main file to use them, without touching the existing classes
 
 11. Which part of your architecture are you least satisfied with, and why?
 The system currently stores data in temporary memory HashMaps rather than a real database, which means data is lost when the app restarts 
