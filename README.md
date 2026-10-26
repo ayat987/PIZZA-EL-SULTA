@@ -31,10 +31,10 @@ For example, in the Order class, it depends on interfaces like PaymentMethod, Pr
 10. If Pizza El Sultan requested five additional payment methods or notification channels tomorrow,
     approximately how much existing code would need modification?
 
-No modification would be needed. I would expand the system by adding new classes that implement the existing interfaces.
+Small changes We only need to add new classes for the new payment or notification methods, and write code in the Main file to use them, without touching the existing classes
 
 11. Which part of your architecture are you least satisfied with, and why?
-    I am least satisfied with the Order class because it contains several responsibilities. However, these responsibilities are closely related to the order itself, so I decided not to split them into different classes.
+The system currently stores data in temporary memory HashMaps rather than a real database, which means data is lost when the app restarts 
 
 12. If you restarted the assignment today, what would you design differently?
     If I restarted the assignment today, I would design the UML first before writing the code. I also learned that I should separate the code into different classes instead of putting everything in one class. The rest of the design, I am satisfied with.
