@@ -1,12 +1,12 @@
 public class Customer{
     private String name;
-    private String number;
+    private String phone;
     private String Email;
     private String address;
-    public Customer(String name,String number,String Email,String address){
+    public Customer(String name,String phone,String Email,String address){
         this.name=name;
         this.Email=Email;
-        this.number=number;
+        this.phone=phone;
         this.address=address;
     }
     public String getName() {
@@ -18,10 +18,13 @@ public class Customer{
     }
 
     public String getNumber() {
-        return number;
+        return phone;
     }
 
     public String getEmail() {
         return Email;
+    }
+    public boolean hasDeliveryInfo(){
+        return address!=null && !address.isBlank()&&phone!=null && !phone.isBlank();
     }
 }

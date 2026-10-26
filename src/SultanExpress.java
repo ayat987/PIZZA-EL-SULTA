@@ -5,5 +5,10 @@ public class  SultanExpress implements DeliveryTrack{
     }
     @Override
     public void estimateDeliveryTime(){
-        System.out.println("AL Sultan Express Estimated delivery  time: 70 minutes");    }
+        System.out.println("AL Sultan Express Estimated delivery  time: 70 minutes");
+    }
+    @Override
+    public void prepare(){
+
+    }
 }

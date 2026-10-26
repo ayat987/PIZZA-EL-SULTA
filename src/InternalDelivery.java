@@ -11,4 +11,8 @@ public class InternalDelivery implements assignDriver,DeliveryTrack{
     public void assigndriver(){
         System.out.println("Driver assigned");
     }
+    @Override
+    public void prepare(){
+        assigndriver();
+    }
 }

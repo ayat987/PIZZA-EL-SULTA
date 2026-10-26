@@ -1,57 +1,91 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Order{
+    private static final double DELIVERY_FEE=30;
     private Customer customer;
     private List<OrderItem> items=new ArrayList<>();
     private OrderType orderType;
-    private Orderstate status;
+    private OrderState status;
     private Promotion promotion;
-    private PaymentMethod paymentMethod;
-    private DeliveryTrack deliveryService;
-    public void setDeliveryService(DeliveryTrack deliveryService) {
-        this.deliveryService = deliveryService;
-    }
 
-    public void trackDelivery() {
-        if (orderType != OrderType.delivery) {
-            throw new IllegalStateException("This is not a delivery order");
-        }
+    public Customer getCustomer() { return customer; }
+    public OrderType getOrderType() { return orderType; }
+    public List<OrderItem> getItems() { return List.copyOf(items); }
 
-        deliveryService.track();
-        deliveryService.estimateDeliveryTime();
-    }
-    public void assignDriver() {
-        if (deliveryService instanceof assignDriver) {
-            ((assignDriver) deliveryService).assigndriver();
-        } else {
-            throw new IllegalStateException(
-                    "This delivery service controls driver assignment"
-            );
-        }
-    }
     public Order(Customer customer, OrderType orderType) {
-        this.customer = customer;
-        this.orderType=orderType;
-        status=Orderstate.pending;
+        this.customer=Objects.requireNonNull(customer,"customer");
+        this.orderType=Objects.requireNonNull(orderType,"ordertype");
+        if (orderType==OrderType.DELIVERY && !customer.hasDeliveryInfo()){
+            throw new IllegalStateException("Delivery requires address and phone");
+        }
+        status= OrderState.NEW;
     }
-    public void setPaymentMethod(PaymentMethod paymentMethod){
-        this.paymentMethod = paymentMethod;
+
+    public void requirePayable() {
+        requireNew();
+        if (items.isEmpty()) {
+            throw new IllegalStateException("Order has no items");
+        }
     }
-    public Customer getCustomer() {
-        return customer;
+    public OrderState getStatus() {
+        return status;
     }
+    public void requireNew(){
+        if(status!= OrderState.NEW){
+            throw new IllegalStateException("Order is not payable");
+        }
+    }
+
     public OrderType getorderType(){
         return orderType;
     }
-    public List<OrderItem> getItems(){
-        return items;
-    }
+
     public void setPromotion(Promotion promotion) {
+        requireEditable();
         this.promotion = promotion;
     }
+    private void requireEditable(){
+        if (status != OrderState.NEW)
+            throw new IllegalStateException("Order can no longer be modified");
+    }
+    public void cancel() {
+        if (status == OrderState.NEW) {
+            status = OrderState.CANCELLED;
+        } else {
+            throw new IllegalStateException("Order cannot be cancelled");
+        }
+    }
 
-    public void addItem(MenuItem item,int quantity) {
+    public void complete() {
+        if(status== OrderState.READY) {
+            status = OrderState.COMPLETED;
+        }else{
+            throw new IllegalStateException("Order is not ready");
+        }
+    }
+
+    public void markPaid() {
+        if (status != OrderState.NEW)
+            throw new IllegalStateException("Order is not payable");
+        status = OrderState.PAID;
+    }
+
+    public void markReady() {
+        if (status != OrderState.PAID) {
+            throw new IllegalStateException(
+                    "Order must be paid before becoming ready"
+            );
+        }
+        status = OrderState.READY;
+    }
+    public void addItem(MenuItem item,int quantity) { // save
+        requireEditable();
+        Objects.requireNonNull(item,"item");
+        if(quantity<=0){
+            throw new IllegalStateException("quantity should be positive");
+        }
         if(!item.getAval()){
             throw new IllegalStateException("Item is unavailable");
         }
@@ -64,9 +98,11 @@ public class Order{
         }
         return c;
     }
+
     public double calculateFulfillmentCharge(){
-        if(orderType==OrderType.delivery){
-            return 30;
+
+        if(orderType==OrderType.DELIVERY){
+            return DELIVERY_FEE;
         }
         return 0;
     }
@@ -89,46 +125,5 @@ public class Order{
         double d= calculateSubtotal() - calculateDiscount()+calculateFulfillmentCharge();
         return Math.max(0,d);
     }
-    public Orderstate getStatus() {
-        return status;
-    }
-    public void pay() {
-        double total=calculateTotal();
-        boolean success= paymentMethod.pay(total);
-        if(success) {
-            status = Orderstate.paid;
-        }
-    }
-
-    public void cancel() {
-        if (status == Orderstate.pending) {
-            status = Orderstate.cancelled;
-        } else {
-            throw new IllegalStateException("Order cannot be cancelled");
-        }
-    }
-
-    public void complete() {
-        if(status==Orderstate.ready) {
-            status = Orderstate.completed;
-        }else{
-            throw new IllegalStateException("Order is not ready");
-        }
-    }
-    public void markReady(NotificationService notificationService) {
-        if (status != Orderstate.paid) {
-            throw new IllegalStateException(
-                    "Order must be paid before becoming ready"
-            );
-        }
-
-        status = Orderstate.ready;
-
-        notificationService.notify(
-                customer,
-                "Your order is ready!"
-        );
-    }
-
 
 }

@@ -28,16 +28,24 @@ public class Main {
                 );
 
         Order takeawayOrder =
-                new Order(customer, OrderType.takeaway);
+                new Order(customer, OrderType.TAKEAWAY);
+        PaymentService paymentService=new PaymentService();
+        NotificationService notifier = new SMSNotifier();
 
         takeawayOrder.addItem(margherita, 2);
         takeawayOrder.addItem(cola, 1);
 
         takeawayOrder.setPromotion(new OpeningPromotion());
 
-        takeawayOrder.setPaymentMethod(new cashPayment());
+        //paymentService.pay(takeawayOrder, new cashPayment());
+        if (paymentService.pay(takeawayOrder, new cashPayment())) {
+            takeawayOrder.markReady();
+            notifier.notify(takeawayOrder.getCustomer(), "Your order is ready!");
+            takeawayOrder.complete();
+        } else {
+            System.out.println("Payment failed. Order is still NEW.");
+        }
 
-        takeawayOrder.pay();
         receipt receipt = new receipt();
         receipt.print(takeawayOrder);
 
@@ -49,26 +57,108 @@ public class Main {
                         "codeforces"
                 );
         Order deliveryOrder =
-                new Order(deliveryCustomer, OrderType.delivery);
+                new Order(deliveryCustomer, OrderType.DELIVERY);
+        DeliveryService deliveryService = new DeliveryService();
 
         deliveryOrder.addItem(chickenRanch, 2);
         deliveryOrder.addItem(garlicBread, 1);
         deliveryOrder.addItem(cola, 1);
 
         deliveryOrder.setPromotion(new MarketingPromotion());
-        deliveryOrder.setPaymentMethod(new cardPayment());
-        deliveryOrder.pay();
-        deliveryOrder.setDeliveryService(
-                new InternalDelivery()
-        );
 
-        deliveryOrder.trackDelivery();
-        deliveryOrder.assignDriver();
-
-        deliveryOrder.markReady(new SMSNotifier());
-        deliveryOrder.complete();
+        if (paymentService.pay(deliveryOrder, new cardPayment())) {
+            deliveryOrder.markReady();
+            notifier.notify(deliveryOrder.getCustomer(), "Your order is ready!");
+            deliveryService.deliver(deliveryOrder, new InternalDelivery());
+            deliveryOrder.complete();
+        } else {
+            System.out.println("Payment failed. Order is still NEW.");
+        }
 
         receipt.print(deliveryOrder);
+
+        PaymentMethod alwaysFail = amount -> {
+            System.out.println("Card authorization FAILED");
+            return false;
+        };
+        PaymentMethod alwaysSucceed = amount -> {
+            System.out.println("Card payment authorized");
+            return true;
+        };
+
+        System.out.println("\n===== PHASE 2 DEMO =====");
+
+        Order retryOrder = new Order(customer, OrderType.TAKEAWAY);
+        retryOrder.addItem(cola, 2);
+
+        if (!paymentService.pay(retryOrder, alwaysFail)) {
+            System.out.println("Payment failed. Status stays: " + retryOrder.getStatus());
+            System.out.println("Retrying with wallet...");
+
+            paymentService.pay(retryOrder, alwaysSucceed);
+        }
+        System.out.println("Status now: " + retryOrder.getStatus());
+
+
+        OnlineWallet walletForRefund = new OnlineWallet();
+
+        walletForRefund.pay(60);
+        walletForRefund.refund(60);
+
+        NotificationService whatsapp = new WhatsAppNotifier();
+        whatsapp.notify(customer, "Your order is ready!");
+
+
+        Order expressOrder = new Order(deliveryCustomer, OrderType.DELIVERY);
+        expressOrder.addItem(garlicBread, 1);
+        if (paymentService.pay(expressOrder, alwaysSucceed)) {
+            expressOrder.markReady();
+            deliveryService.deliver(expressOrder, new SultanExpress());
+            expressOrder.complete();
+        }
+
+        tryCase("Empty order", () -> {
+            Order empty = new Order(customer, OrderType.TAKEAWAY);
+            paymentService.pay(empty, new cashPayment());
+        });
+
+        tryCase("Quantity 0", () -> {
+            Order o = new Order(customer, OrderType.TAKEAWAY);
+            o.addItem(cola, 0);
+        });
+
+        tryCase("Negative quantity", () -> {
+            Order o = new Order(customer, OrderType.TAKEAWAY);
+            o.addItem(cola, -2);
+        });
+
+        tryCase("Delivery without address/phone", () -> {
+            Customer noInfo = new Customer("Sara", "", "sara@gmail.com", "");
+            new Order(noInfo, OrderType.DELIVERY);
+        });
+
+        tryCase("Modify order after payment", () -> {
+            Order o = new Order(customer, OrderType.TAKEAWAY);
+            o.addItem(cola, 1);
+            paymentService.pay(o, new cashPayment());
+            o.addItem(water, 1);
+        });
+
+        tryCase("Pay twice", () -> {
+            Order o = new Order(customer, OrderType.TAKEAWAY);
+            o.addItem(cola, 1);
+            paymentService.pay(o, new cashPayment());
+            paymentService.pay(o, new cashPayment());
+        });
+    }
+    private static void tryCase(String title, Runnable action) {
+        System.out.println("\n--- Edge case: " + title + " ---");
+        try {
+            action.run();
+            System.out.println("Unexpected: no error was thrown!");
+        } catch (IllegalArgumentException | IllegalStateException | NullPointerException e) {
+            System.out.println("Rejected correctly: " + e.getMessage());
+        }
     }
 
 }
