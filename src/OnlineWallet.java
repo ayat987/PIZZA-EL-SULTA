@@ -1,4 +1,4 @@
-public class  OnlineWallet implements PaymentMethod,Refundable{
+public class  OnlineWallet implements PaymentMethod{
     @Override
     public boolean pay(double amount){
         return true;

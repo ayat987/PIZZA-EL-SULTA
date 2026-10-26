@@ -7,7 +7,6 @@ public class DeliveryService {
         if (order.getorderType()!=OrderType.DELIVERY){
             throw new IllegalStateException("This is not a delivery order");
         }
-        deliveryTrack.prepare();
         deliveryTrack.track();
         deliveryTrack.estimateDeliveryTime();
     }

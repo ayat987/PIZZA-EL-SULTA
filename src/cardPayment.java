@@ -1,4 +1,4 @@
-public class cardPayment implements PaymentMethod,Refundable{
+public class cardPayment implements PaymentMethod{
     @Override
     public boolean pay(double amount){
         return Math.random()>0.3;

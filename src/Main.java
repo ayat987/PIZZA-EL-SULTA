@@ -116,7 +116,37 @@ public class Main {
             deliveryService.deliver(expressOrder, new SultanExpress());
             expressOrder.complete();
         }
+        /***************************^9+9^*********************************/
+        System.out.println("\n===== REFUND DEMO =====");
+        Order refundDemoOrder = new Order(customer, OrderType.TAKEAWAY);
+        refundDemoOrder.addItem(cola, 1);
 
+        if (paymentService.pay(refundDemoOrder, new OnlineWallet())) {
+            paymentService.refund(refundDemoOrder, 30);
+            System.out.println("Refund successful!");
+        }
+        tryCase("Refund order that was never paid", () -> {
+            Order o = new Order(customer, OrderType.TAKEAWAY);
+            o.addItem(cola, 1);
+            paymentService.refund(o, 30);
+        });
+        tryCase("Refund more than paid", () -> {
+            Order o = new Order(customer, OrderType.TAKEAWAY);
+            o.addItem(cola, 1);
+            if (paymentService.pay(o, new OnlineWallet())) {
+                paymentService.refund(o, 1000);
+            } else {
+                throw new IllegalStateException("Wallet payment failed, retry demo");
+            }
+        });
+
+        tryCase("Refund a cash payment", () -> {
+            Order o = new Order(customer, OrderType.TAKEAWAY);
+            o.addItem(cola, 1);
+            paymentService.pay(o, new cashPayment());
+            paymentService.refund(o, 30);
+        });
+        /******************************^9+9^******************************************/
         tryCase("Empty order", () -> {
             Order empty = new Order(customer, OrderType.TAKEAWAY);
             paymentService.pay(empty, new cashPayment());
