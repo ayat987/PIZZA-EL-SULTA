@@ -31,7 +31,7 @@ For example, in the Order class, it depends on interfaces like PaymentMethod, Pr
 10. If Pizza El Sultan requested five additional payment methods or notification channels tomorrow,
     approximately how much existing code would need modification?
 
-Small changes We only need to add new classes for the new payment or notification methods, and write code in the Main file to use them, without touching the existing classes
+ Small changes We only need to add new classes for the new payment or notification methods, and write code in the Main file to use them, without touching the existing classes
 
 11. Which part of your architecture are you least satisfied with, and why?
 The system currently stores data in temporary memory HashMaps rather than a real database, which means data is lost when the app restarts 
