@@ -26,7 +26,7 @@ For example, in the Order class, it depends on interfaces like PaymentMethod, Pr
    There was no major change because I designed the project in a flexible way from the beginning, using interfaces and SOLID principles, so adding new requirements did not require many changes to the original architecture.
 
 9. What changed between your Initial UML and Final UML?
-   Some new features were added to some classes, like a new class called GarlicBread that extends MenuItem, and a new feature for paying with an online wallet. I also added a new interface called Refundable, which is implemented by only two classes: cardPayment and OnlineWallet.
+   Some new features were added to some classes, like a new class called GarlicBread that extends MenuItem, and a new feature for paying with an online wallet. I also added a new interface called Refundable,        which is implemented by only two classes: cardPayment and OnlineWallet.
 
 10. If Pizza El Sultan requested five additional payment methods or notification channels tomorrow,
     approximately how much existing code would need modification?
